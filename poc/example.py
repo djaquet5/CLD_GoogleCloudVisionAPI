@@ -15,21 +15,26 @@ A small demo program meant to show some possible operations using Google Vision 
 """
 
 
+def text_detection(image):
+    """Actually executes the request to the API"""
+    client = vision.ImageAnnotatorClient()
+
+    response = client.text_detection(image=image)
+    data = response.text_annotations
+
+    return data[0].locale, data[0].description
+
+
 def text_from_url(url):
     """
     Read an image from a URL and return the text written in the image and its language.
     :param url: The URL of the image to read.
     :returns: A tuple (language, text read) for the image in question.
     """
-    client = vision.ImageAnnotatorClient()
-
     image = types.Image()
     image.source.image_uri = url
 
-    response = client.text_detection(image=image)
-    data = response.text_annotations
-
-    return data[0].locale, data[0].description
+    return text_detection(image)
 
 
 def text_from_local(filepath):
@@ -38,16 +43,11 @@ def text_from_local(filepath):
     :param filepath: The path on disk of the image to read.
     :returns: A tuple (language, text read) for the image in question.
     """
-    client = vision.ImageAnnotatorClient()
-
     with open(filepath, 'rb') as file:
         content = file.read()
-
     image = types.Image(content=content)
-    response = client.text_detection(image=image)
-    data = response.text_annotations
 
-    return data[0].locale, data[0].description
+    return text_detection(image)
 
 
 def main():
@@ -72,10 +72,11 @@ def main():
         locale, text = text_from_local(FILEPATH)
 
     # Print results
+    print("----------------------------")
     print("The detected language is:", locale)
-    print("The read text is:")
-    print("-----------------")
-    print(text)
+    print("----------------------------")
+    print("The read text is:\n")
+    print(text + "----------------------------")
 
 
 if __name__ == "__main__":
