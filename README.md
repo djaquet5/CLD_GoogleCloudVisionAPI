@@ -36,3 +36,4 @@ Your boss asks that you investigate, in a small group of colleagues, a cloud ser
 - Give pointers to references for further detailed information, explanations.
 
 - You will have several sessions for preparation. During these session you can ask the professor to assist you in the preparation of the presentation and proof-of-concept.
+
