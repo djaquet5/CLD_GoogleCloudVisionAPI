@@ -8,10 +8,10 @@ from distutils.util import strtobool
 from google.cloud import vision
 from google.cloud.vision import types
 
-
 """
 A small demo program meant to show some possible operations using Google Vision API.
 1. Read an image from a URL and return the text written in the image and its language.
+2. Read an image from the disk and return the text written in the image and its language.
 """
 
 
@@ -23,15 +23,31 @@ def text_from_url(url):
     """
     client = vision.ImageAnnotatorClient()
 
-    image = vision.types.Image()
+    image = types.Image()
     image.source.image_uri = url
 
     response = client.text_detection(image=image)
+    data = response.text_annotations
 
-    texts = response.text_annotations
+    return data[0].locale, data[0].description
 
-    return texts[0].locale, texts[0].description
 
+def text_from_local(filepath):
+    """
+    Read an image from disk and return the text written in the image and its language.
+    :param filepath: The path on disk of the image to read.
+    :returns: A tuple (language, text read) for the image in question.
+    """
+    client = vision.ImageAnnotatorClient()
+
+    with open(filepath, 'rb') as file:
+        content = file.read()
+
+    image = types.Image(content=content)
+    response = client.text_detection(image=image)
+    data = response.text_annotations
+
+    return data[0].locale, data[0].description
 
 
 def main():
@@ -40,13 +56,20 @@ def main():
 
     # Read program arguments
     parser = ArgumentParser(description="OCR application using Google Vision API")
-    parser.add_argument("url", help="The URL of the image to read")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--url", help="The URL of the image to read")
+    group.add_argument("--filepath", help="The path on disk of the image to read")
 
     args = parser.parse_args()
     URL = args.url
+    FILEPATH = args.filepath
 
     # Read text using Google Vision API
-    locale, text = text_from_url(URL)
+    if URL is not None:
+        locale, text = text_from_url(URL)
+
+    if FILEPATH is not None:
+        locale, text = text_from_local(FILEPATH)
 
     # Print results
     print("The detected language is:", locale)
